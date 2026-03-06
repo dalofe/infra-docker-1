@@ -1,21 +1,50 @@
-name: Container Validation (CI)
+name: Build and Push Containers (CI/CD)
 
 on:
   push:
-    branches: ["main"]
+    branches: [ "main" ]
   pull_request:
-    branches: ["main"]
+    branches: [ "main" ]
+
+# Define global variables for the workflow
+env:
+  REGISTRY: ghcr.io
+  # Converts your repo name into lowercase automatically (required by Docker)
+  IMAGE_NAME: ${{ github.repository }}
 
 jobs:
-  build-and-validate:
+  build-and-publish:
     runs-on: ubuntu-latest
+    
+    # Required permissions to push images to GitHub Packages
+    permissions:
+      contents: read
+      packages: write
 
     steps:
       - name: Checkout repository code
         uses: actions/checkout@v4
 
-      - name: Build Frontend Docker image
-        run: docker build -t my-frontend:test ./frontend
+      - name: Authenticate with GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Build Backend Docker image
-        run: docker build -t my-backend:test ./backend
+      # Build and push the Frontend image
+      - name: Build and Push Frontend Image
+        run: |
+          # Create a specific tag for this image
+          IMAGE_ID=$(echo ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}-frontend | tr '[A-Z]' '[a-z]')
+          
+          docker build -t $IMAGE_ID:latest ./frontend
+          docker push $IMAGE_ID:latest
+
+      # Build and push the Backend image
+      - name: Build and Push Backend Image
+        run: |
+          IMAGE_ID=$(echo ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}-backend | tr '[A-Z]' '[a-z]')
+          
+          docker build -t $IMAGE_ID:latest ./backend
+          docker push $IMAGE_ID:latest
