@@ -1,0 +1,21 @@
+name: Container Validation (CI)
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+    branches: ["main"]
+
+jobs:
+  build-and-validate:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository code
+        uses: actions/checkout@v4
+
+      - name: Build Frontend Docker image
+        run: docker build -t my-frontend:test ./frontend
+
+      - name: Build Backend Docker image
+        run: docker build -t my-backend:test ./backend
