@@ -5,13 +5,14 @@ function Button() {
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   const [response, setResponse] = useState<any>(null);
+  const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";
 
   async function handleClick() {
     setLoading(true);
     setError(null);
 
     try {
-      const response = await fetch("http://localhost:3000/api/status");
+      const response = await fetch(`${API_URL}/api/status`);
       if (!response.ok) {
         throw new Error(`Server error: ${response.status}`);
       }

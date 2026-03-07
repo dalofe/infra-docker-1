@@ -16,6 +16,12 @@ RUN npm install
 # Ahora sí, copiamos todo el resto de tu código fuente
 COPY . .
 
+# Define an argument that Docker will expect during the build process
+ARG VITE_API_URL
+
+# Convert that argument into an Environment Variable for the Node/Vite process
+ENV VITE_API_URL=$VITE_API_URL
+
 # Compilamos la aplicación de React/TS (esto generará la carpeta /dist o /build)
 RUN npm run build
 
