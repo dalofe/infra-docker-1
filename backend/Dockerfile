@@ -1,21 +1,21 @@
-# Usamos una imagen ligera de Node
+# Use a lightweight Node image
 FROM node:18-alpine
 
-# Le decimos a Docker: "Ponte en esta carpeta dentro del contenedor"
+# Set the working directory inside the container
 WORKDIR /app
 
-# Copiamos los archivos de dependencias primero para aprovechar la caché
+# Copy dependency files first to leverage Docker layer caching
 COPY package*.json ./
 
-# ¡DIFERENCIA CLAVE! Instalamos SOLO las dependencias de producción.
-# Ignoramos nodemon, jest, eslint, etc., para que la imagen sea más ligera y segura.
+# KEY DIFFERENCE: Install ONLY production dependencies.
+# Ignore devDependencies (nodemon, jest, eslint, etc.) for a smaller, more secure image.
 RUN npm install --production
 
-# Copiamos el resto del código de la API
+# Copy the rest of the API source code
 COPY . .
 
-# Exponemos el puerto donde escucha tu API (asumamos que es el 3000)
+# Expose the port where the API listens (assuming 3000)
 EXPOSE 3000
 
-# El comando que mantendrá la aplicación viva
+# The command to keep the application running
 CMD ["node", "index.js"]

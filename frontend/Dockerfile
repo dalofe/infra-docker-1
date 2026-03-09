@@ -1,19 +1,19 @@
 # ==========================================
-# ETAPA 1: El Constructor (Builder)
+# STAGE 1: Builder
 # ==========================================
-# Usamos una imagen oficial de Node (versión 18, versión ligera 'alpine')
+# Use the official Node image (version 18, lightweight 'alpine' variant)
 FROM node:18-alpine as builder
 
-# Le decimos a Docker: "Ponte en esta carpeta dentro del contenedor"
+# Set the working directory inside the container
 WORKDIR /app
 
-# Copiamos solo los archivos de dependencias primero (buena práctica de caché)
+# Copy dependency files first (best practice for Docker layer caching)
 COPY package.json package-lock.json ./
 
-# Instalamos las dependencias
+# Install dependencies
 RUN npm install
 
-# Ahora sí, copiamos todo el resto de tu código fuente
+# Copy the rest of the application source code
 COPY . .
 
 # Define an argument that Docker will expect during the build process
@@ -22,24 +22,24 @@ ARG VITE_API_URL
 # Convert that argument into an Environment Variable for the Node/Vite process
 ENV VITE_API_URL=$VITE_API_URL
 
-# Compilamos la aplicación de React/TS (esto generará la carpeta /dist o /build)
+# Build the React/TS application (generates the /dist directory)
 RUN npm run build
 
 
 # ==========================================
-# ETAPA 2: El Servidor Web (Producción)
+# STAGE 2: Web Server (Production)
 # ==========================================
-# Usamos Nginx, un servidor web rapidísimo y súper ligero
+# Use Nginx, a blazing-fast and lightweight web server
 FROM nginx:alpine
 
-# ¡Aquí ocurre la magia! 
-# Vamos a la ETAPA 1 (builder) y le "robamos" la carpeta compilada.
-# La copiamos en la ruta donde Nginx sirve los archivos estáticos por defecto.
-# Nota: Si usas Vite, la carpeta es 'dist'. Si usas Create React App, es 'build'.
+# Here is where the magic happens!
+# We take the compiled artifact from STAGE 1 (builder).
+# Copy it to the default path where Nginx serves static files.
+# Note: Vite uses 'dist', while Create React App uses 'build'.
 COPY --from=builder /app/dist /usr/share/nginx/html
 
-# Opcional: Exponemos el puerto 80 para indicar por dónde escucha Nginx
+# Optional: Expose port 80 to document where Nginx listens
 EXPOSE 80
 
-# Arrancamos Nginx
+# Start Nginx
 CMD ["nginx", "-g", "daemon off;"]
