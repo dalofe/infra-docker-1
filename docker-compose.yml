@@ -1,21 +1,21 @@
-version: '3.8' # La versión del formato del archivo
+version: '3.8' # The file format version
 
 services:
-  # 1. Nuestro servicio de Backend
+  # 1. Our Backend service
   api-backend:
     build: 
-      context: ./backend # Dónde está el código y el Dockerfile
+      context: ./backend # Where the code and Dockerfile are located
     ports:
-      - "3000:3000" # Mapeamos el puerto 3000 de tu PC al 3000 del contenedor
-    # Opcional pero recomendado: un nombre claro para el contenedor
-    container_name: mi_backend_node 
+      - "3000:3000" # Map port 3000 on the host to port 3000 in the container
+    # Optional but recommended: a clear, descriptive name for the container
+    container_name: my_backend_node 
 
-  # 2. Nuestro servicio de Frontend
+  # 2. Our Frontend service
   web-frontend:
     build: 
-      context: ./frontend # Dónde está el código y el Dockerfile
+      context: ./frontend # Where the code and Dockerfile are located
     ports:
-      - "8080:80" # Tu PC en el 8080, Nginx (dentro del contenedor) en el 80
-    container_name: mi_frontend_react
+      - "8080:80" # Host on 8080, Nginx (inside the container) on 80
+    container_name: my_frontend_react
     depends_on:
-      - api-backend # Le decimos a Docker que levante el backend primero
+      - api-backend # Tell Docker to start the backend before the frontend
