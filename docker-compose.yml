@@ -1,21 +1,49 @@
-version: '3.8' # The file format version
-
 services:
-  # 1. Our Backend service
+  # 1. Our Database service (Hello, MySQL!)
+  db-mysql:
+    image: mysql:8.0
+    container_name: my_database_mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${DB_NAME}
+      MYSQL_USER: ${DB_USER}
+      MYSQL_PASSWORD: ${DB_PASSWORD}
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql # THE MAGIC LINE: Mapping the volume for MySQL
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${DB_ROOT_PASSWORD}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # 2. Our Backend service
   api-backend:
     build: 
-      context: ./backend # Where the code and Dockerfile are located
+      context: ./backend
     ports:
-      - "3000:3000" # Map port 3000 on the host to port 3000 in the container
-    # Optional but recommended: a clear, descriptive name for the container
+      - "3000:3000"
     container_name: my_backend_node 
+    depends_on:
+      db-mysql:
+        condition: service_healthy #it not only depends on the database container, but also waits until it's healthy (after the conditions set in healthcheck) before starting
+    environment:
+      - DB_HOST=db-mysql
+      - DB_USER=${DB_USER}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - DB_NAME=${DB_NAME}
 
-  # 2. Our Frontend service
+  # 3. Our Frontend service
   web-frontend:
     build: 
-      context: ./frontend # Where the code and Dockerfile are located
+      context: ./frontend
     ports:
-      - "8080:80" # Host on 8080, Nginx (inside the container) on 80
+      - "8080:80"
     container_name: my_frontend_react
     depends_on:
-      - api-backend # Tell Docker to start the backend before the frontend
+      - api-backend
+      
+# The declaration of our permanent storage
+volumes:
+  mysql_data:
