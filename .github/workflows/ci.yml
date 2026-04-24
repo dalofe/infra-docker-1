@@ -37,8 +37,10 @@ jobs:
         run: |
           # Create a specific tag for this image
           IMAGE_ID=$(echo ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}-frontend | tr '[A-Z]' '[a-z]')
-          
-          docker build -t $IMAGE_ID:latest ./frontend
+
+          docker build \
+            --build-arg VITE_API_URL=https://infra-docker-1-backend.onrender.com \
+            -t $IMAGE_ID:latest ./frontend
           docker push $IMAGE_ID:latest
 
       # Build and push the Backend image
