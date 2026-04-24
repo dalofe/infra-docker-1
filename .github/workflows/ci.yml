@@ -44,11 +44,8 @@ jobs:
       # Build and push the Backend image
       - name: Build and Push Backend Image
         run: |
-          IMAGE_ID=$(echo ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}-frontend | tr '[A-Z]' '[a-z]')
-          
-          # Pass the Render Backend URL as a build argument
-          docker build \
-            --build-arg VITE_API_URL=https://infra-docker-1-backend.onrender.com \
-            -t $IMAGE_ID:latest ./frontend
-            
+          IMAGE_ID=$(echo ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}-backend | tr '[A-Z]' '[a-z]')
+
+          docker build -t $IMAGE_ID:latest ./backend
+
           docker push $IMAGE_ID:latest
