@@ -18,6 +18,40 @@ connection.connect((err) => {
     return;
   }
   console.log('✅ Successful connection to the MySQL database!');
+
+  // Create the table if it doesn't exist
+  const createTableQuery = `
+    CREATE TABLE IF NOT EXISTS projects (
+      id INT AUTO_INCREMENT PRIMARY KEY,
+      title VARCHAR(255) NOT NULL,
+      description TEXT,
+      tech_stack VARCHAR(255),
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    )
+  `;
+
+  connection.query(createTableQuery, (err) => {
+    if (err) {
+      console.error('❌ Error creating table:', err);
+      return;
+    }
+    console.log('✅ "projects" table is ready!');
+
+    // Insert a sample project if the table is empty
+    connection.query('SELECT COUNT(*) AS count FROM projects', (err, results) => {
+      if (err) {
+        console.error('❌ Error checking table rows:', err);
+        return;
+      }
+      
+      if (results.count === 0) {
+        const seedQuery = 'INSERT INTO projects (title, description, tech_stack) VALUES (?, ?, ?)';
+        connection.query(seedQuery, ['My Docker Portfolio', 'A full-stack app running on containers', 'React, Node, MySQL'], (err) => {
+          if (!err) console.log('🌱 Database seeded with initial data!');
+        });
+      }
+    });
+  });
 });
 
 // Initialize the Express application
@@ -38,6 +72,18 @@ app.get("/api/status", (req, res) => {
   res.json({
     message: "Hello world! Successful request from Node.js 🚀",
     timestamp: new Date().toISOString(),
+  });
+});
+
+// Get all projects from the database
+app.get("/api/projects", (req, res) => {
+  connection.query('SELECT * FROM projects', (err, results) => {
+    if (err) {
+      console.error('❌ Error fetching projects:', err);
+      res.status(500).json({ error: 'Error fetching projects' });
+      return;
+    }
+    res.json(results);
   });
 });
 

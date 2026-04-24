@@ -36,8 +36,10 @@ services:
 
   # 3. Our Frontend service
   web-frontend:
-    build: 
+    build:
       context: ./frontend
+      args:
+        - VITE_API_URL=http://localhost:3000
     ports:
       - "8080:80"
     container_name: my_frontend_react
